@@ -1,0 +1,11 @@
+Flask==1.1.1
+jsonify==0.5
+numpy==1.18.1
+pickleshare==0.7.4
+scikit-learn==0.22.1
+scipy==1.4.1
+simplejson==3.13.2
+sklearn==0.0
+requests==2.18.4
+requests-unixsocket==0.1.5
+pandas==0.22.0

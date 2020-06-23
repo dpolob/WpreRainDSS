@@ -1,0 +1,3 @@
+curl -X GET -H 'Content-Type: application/json' http://127.0.0.1:5000/api/101_prediccion -d '{"fecha" : "2018-10-23 12:12:12"}'
+
+

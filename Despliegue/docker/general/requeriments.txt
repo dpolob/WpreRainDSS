@@ -1,0 +1,10 @@
+Flask==1.0.2
+Flask-Cors==3.0.4
+numpy==1.17.2
+pandas==0.23.0
+#scikit-image==0.13.1
+scikit-learn==0.19.1
+scipy==1.1.0
+DateTime==4.3
+requests==2.18.4
+pyOpenSSL==18.0.0
