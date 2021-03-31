@@ -7,4 +7,4 @@ import pickle
 
 
 def save_parameters(parameters):
-    pickle.dump(parameters, open('/WeatherPrediction/status.pickle', 'wb'))
+    pickle.dump(parameters, open('status.pickle', 'wb'))

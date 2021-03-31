@@ -20,7 +20,7 @@ parameters = {
 
 
 def reset_parameters():
-    pickle.dump(parameters, open('/WeatherPrediction/status.pickle', 'wb'))
+    pickle.dump(parameters, open('status.pickle', 'wb'))
 
 
 if __name__ == "__main__":

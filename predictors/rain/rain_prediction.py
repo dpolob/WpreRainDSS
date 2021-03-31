@@ -9,34 +9,17 @@ from predictors.rain.aemet import aemet
 import torch
 
 
-def rain_prediction(ts_start):
+def rain_prediction():
 
-    dt_start = datetime.datetime.fromtimestamp(ts_start)
-    start = datetime.datetime(
-                                year=dt_start.year,
-                                month=dt_start.month,
-                                day=dt_start.day,
-                                hour=dt_start.hour,
-                                minute=0,
-                                second=0)
     # Get data from AEMET database
-    status, result_data = aemet.get_data_url(start)
-    print (result_data)
+    status, result_data = aemet.get_data_url()
     if status == 'ERROR':
         return ('ERROR', result_data)
     status, result_data = aemet.get_data(result_data)
-    print(result_data)
     if status == 'ERROR':
         return ('ERROR', result_data)
 
-    ts = time.mktime(start.timetuple())
-    ts = int(ts) + (24*60*60)
-    final_result = dict()
-    for i in range(24):
-        key = str(int(ts) - (3600*(i)))
-        final_result[key] = result_data[start.hour + i]
-    return ("OK", final_result)
-
+    return ("OK", result_data)
 
 def make_prediction(lista):
     scaler = pickle.load(open('temp_scaler.pickle', 'rb'))

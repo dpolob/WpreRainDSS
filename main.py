@@ -1,13 +1,31 @@
 import time
 import datetime
+import utils
 
 from flask import Flask, jsonify, request
 from flask import Response, make_response
 
+import globals
 from utils import read_parameters, save_parameters, reset_parameters, save_errors
 from predictors.rain import rain_prediction
 from predictors.temp import temp_prediction
 
+from multiprocessing.dummy import Pool
+from send_mmt import send_mmt
+
+# Logging module
+import logging
+import logging.config
+import loggly.handlers
+
+if globals.LOGLY:
+    logging.config.fileConfig('loggly.conf')
+else:
+    logging.basicConfig(filename='log.log', encoding='utf-8', level=logging.DEBUG)
+logger = logging.getLogger()
+
+
+pool = Pool(2)
 app = Flask(__name__)
 
 
@@ -92,6 +110,55 @@ def get_reset():
     return make_response(jsonify(result), 200)
 
 
+# API for entry point commands
+
+@app.route('/stop_alg', methods=['GET'])
+def get_stopalg():
+    if request.method == 'GET':
+        logger.info("[{}] /stop_alg {} method requested from {}".format(globals.NAME, request.method, request.url))
+        return Response("{\"status\" : \"STOPPED\", \"msg\" : {\"OK\" : \"Algorithm stopped\"}}", status=200, mimetype='application/json')
+
+@app.route('/run_alg', methods=['POST'])
+def post_runalg():
+    global pool
+    if request.method == 'POST':
+
+        logger.info("/run_alg {} method requested from {}".format(request.method, request.url))
+        parameters = read_parameters()
+        data = request.get_json()
+
+        if 'config' not in data.keys() or 'request_id' not in data.keys() or 'dss_api_endpoint' not in data.keys():
+            logger.info("/run_alg {} config or request_id or dss_api_endpoint not sent in JSON".format(request.method))
+            return make_response(jsonify(dict({"status" : "ERROR", "msg" : {"ERROR" : "Json keys are wrong"}})), 200)
+
+        parameters = data['config']
+        save_parameters(parameters)
+        
+        status, result = rain_prediction.rain_prediction()
+        logger.info("/run_alg {} {}: {}".format(request.method, status, result))
+        if status == "ERROR":
+            return make_response(jsonify(dict({"status" : "ERROR", "msg" : {"ERROR" : result}})), 200)
+        else:
+            #convey to MMT through DSS
+            
+            pool.apply_async(send_mmt, (data, result, "% of raining in 24 hours"))
+            # Reply to DSS 
+            logger.info("/run_alg {} Reply to DSS. Algorithm started and info sent to MMT".format(request.method))
+            return Response("{\"status\" : \"STARTED\", \"msg\" : {\"OK\" : \"Algorithm started and info sent to MMT\"}}", status=200,    mimetype='application/json')
+
+@app.route('/status_alg', methods=['GET'])
+def get_statusalg():
+    if request.method == 'GET':
+        logger.info("[{}]/run_status {} method requested from {}".format(globals.NAME, request.method, request.url))
+        values = {"status": "STARTED",
+                  "msg" : {
+                            "flask_port" : globals.FLASKPORT,
+                            "parameters" : utils.read_parameters()
+                            }
+                }
+          
+        return make_response(jsonify(values), 200)      
+
 if __name__ == '__main__':
     parameters=read_parameters.read_parameters()
-    app.run(debug=True, host='0.0.0.0', port=parameters['flask_port'])
+    app.run(debug=True, host='0.0.0.0', port=globals.FLASKPORT)
