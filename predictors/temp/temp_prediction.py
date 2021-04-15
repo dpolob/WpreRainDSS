@@ -2,7 +2,7 @@ import numpy as np
 import datetime
 import time
 import pickle
-import torch
+#import torch
 
 from predictors.models import temp_model
 from utils import data
@@ -50,7 +50,7 @@ def make_prediction(lista):
     x = x.type(torch.float)
 
     net = temp_model.Red_Parcela(36, 24)
-    net.load_state_dict(torch.load('temp.model.pt'))
+#    net.load_state_dict(torch.load('temp.model.pt'))
     net.eval()
     y = net(x)
 

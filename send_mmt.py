@@ -4,7 +4,7 @@ from flask import json
 
 def send_mmt(data, result, observation, message):
     global logger
-                #convey to MMT through DSS
+    #convey to MMT through DSS
     urllib3.disable_warnings()  # disable SSL warnings
     data_to_MMT= {
                             "request_id": data['request_id'],
@@ -13,7 +13,7 @@ def send_mmt(data, result, observation, message):
                                 "timestamp": result['timestamp'],
                                 "observation": observation,
                                 "units": message,
-                                "result": result['value']
+                                "result": result
                             }]
                         }
     try:

@@ -19,7 +19,7 @@ def get_data_url():
         # no pyopenssl support used / needed / available
         pass
     
-    response_aemet = requests.get('https://opendata.aemet.es/opendata/api/prediccion/especifica/municipio/horaria/' + globals.MUNICIPIO, headers={"Accept": "application/json", "api_key" : aemet_key }, verify=False)
+    response_aemet = requests.get('https://opendata.aemet.es/opendata/api/prediccion/especifica/municipio/horaria/' + str(globals.MUNICIPIO), headers={"Accept": "application/json", "api_key" : aemet_key }, verify=False)
     if not response_aemet.ok:
         return ("ERROR", "AEMET API is not working")
 
@@ -43,10 +43,11 @@ def get_data(url):
     data = json.loads(data.text)
     data = data[0]
     #data0 = data['prediccion']['dia'][0]
-    prediccion = data['prediccion']['dia'][1]['probPrecipitacion'][0]['value']
+    prediccion = float(data['prediccion']['dia'][1]['probPrecipitacion'][0]['value'])
     #data2 = data['prediccion']['dia'][2]
+    acummulated = sum([float(x["value"]) for x in data['prediccion']['dia'][1]['precipitacion']])
    
-    return ("OK", prediccion)
+    return ("OK", prediccion, acummulated)
 
 
 

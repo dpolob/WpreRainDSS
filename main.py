@@ -1,3 +1,4 @@
+from os import execv
 import time
 import datetime
 import utils
@@ -18,10 +19,12 @@ import logging
 import logging.config
 import loggly.handlers
 
+import exceptions
+
 if globals.LOGLY:
     logging.config.fileConfig('loggly.conf')
 else:
-    logging.basicConfig(filename='log.log', encoding='utf-8', level=logging.DEBUG)
+    logging.basicConfig(filename='mylog.log', level=logging.INFO)
 logger = logging.getLogger()
 
 
@@ -31,8 +34,7 @@ app = Flask(__name__)
 
 @app.errorhandler(404)
 def not_found(error):
-    return make_response(jsonify({'error': 'ALGORITHM not found'}), 404)
-
+    return make_response(jsonify({'status': 'RAIN PREDICTION route not found'}), 404)
 
 # API for rain predictions
 @app.route('/api_afc_enc_wpre/t/<ts_start>', methods=['GET'])
@@ -111,7 +113,6 @@ def get_reset():
 
 
 # API for entry point commands
-
 @app.route('/stop_alg', methods=['GET'])
 def get_stopalg():
     if request.method == 'GET':
@@ -122,43 +123,42 @@ def get_stopalg():
 def post_runalg():
     global pool
     if request.method == 'POST':
+        try:
+            logger.info("/run_alg {} method requested from {}".format(request.method, request.url))
+            data = request.get_json()
+            if 'config' not in data.keys() or 'request_id' not in data.keys() or 'dss_api_endpoint' not in data.keys():
+                raise exceptions.json_key_incorrect_exception(log=logger, value="[RAIN][/run_alg] Json Keys are wrong")
+     
+            status, result_probability, result_acummulated = rain_prediction.rain_prediction()
 
-        logger.info("/run_alg {} method requested from {}".format(request.method, request.url))
-        parameters = read_parameters()
-        data = request.get_json()
-
-        if 'config' not in data.keys() or 'request_id' not in data.keys() or 'dss_api_endpoint' not in data.keys():
-            logger.info("/run_alg {} config or request_id or dss_api_endpoint not sent in JSON".format(request.method))
-            return make_response(jsonify(dict({"status" : "ERROR", "msg" : {"ERROR" : "Json keys are wrong"}})), 200)
-
-        parameters = data['config']
-        save_parameters(parameters)
-        
-        status, result = rain_prediction.rain_prediction()
-        logger.info("/run_alg {} {}: {}".format(request.method, status, result))
-        if status == "ERROR":
-            return make_response(jsonify(dict({"status" : "ERROR", "msg" : {"ERROR" : result}})), 200)
-        else:
-            #convey to MMT through DSS
-            
-            pool.apply_async(send_mmt, (data, result, "% of raining in 24 hours"))
-            # Reply to DSS 
-            logger.info("/run_alg {} Reply to DSS. Algorithm started and info sent to MMT".format(request.method))
-            return Response("{\"status\" : \"STARTED\", \"msg\" : {\"OK\" : \"Algorithm started and info sent to MMT\"}}", status=200,    mimetype='application/json')
+            logger.info("[RAIN][/run_alg] Status: {} Get %: {} and cummulated: {} from rain_predictor".format(status, result_probability, result_acummulated))
+            if status == "ERROR":
+                raise exceptions.error_result_exception(log=logger, value="[RAIN][/run_alg] rain_prediction throwed an error: " + str(result))
+            else:
+                #convey to MMT through DSS
+                pool.apply_async(send_mmt, (data, result_probability,"Rain %", "%. Cummulated: " + str(result_acummulated) + " mm"))
+                # Reply to DSS 
+                logger.info("/run_alg {} Reply to DSS. Algorithm started and info sent to MMT".format(request.method))
+                return Response("{\"status\" : \"STARTED\", \"msg\" : {\"OK\" : \"Algorithm started and info sent to MMT\"}}", status=200,    mimetype='application/json')
+                
+        except exceptions.json_key_incorrect_exception as e:
+            return make_response(jsonify(dict({"status" : "ERROR", "msg" : str(e)})), 500)
+        except exceptions.error_result_exception as e:
+            return make_response(jsonify(dict({"status" : "ERROR", "msg" : str(e)})), 500)
+        except Exception as e:
+            return make_response(jsonify(dict({"status" : "ERROR", "msg" : str(e)})), 500)
 
 @app.route('/status_alg', methods=['GET'])
 def get_statusalg():
     if request.method == 'GET':
-        logger.info("[{}]/run_status {} method requested from {}".format(globals.NAME, request.method, request.url))
+        logger.info("[RAIN][/run_status] {} method requested from {}".format(globals.NAME, request.method, request.url))
         values = {"status": "STARTED",
                   "msg" : {
                             "flask_port" : globals.FLASKPORT,
-                            "parameters" : utils.read_parameters()
-                            }
+                    }
                 }
-          
         return make_response(jsonify(values), 200)      
 
 if __name__ == '__main__':
-    parameters=read_parameters.read_parameters()
+    #parameters=read_parameters.read_parameters()
     app.run(debug=True, host='0.0.0.0', port=globals.FLASKPORT)
