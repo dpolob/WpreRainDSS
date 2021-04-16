@@ -131,9 +131,9 @@ def post_runalg():
      
             status, result_probability, result_acummulated = rain_prediction.rain_prediction()
 
-            logger.info("[RAIN][/run_alg] Status: {} Get %: {} and cummulated: {} from rain_predictor".format(status, result_probability, result_acummulated))
+            logger.info("[RAIN][/run_alg] Status: {} Get %: {} and cummulated: {} from rain_predictor".format(status, result_probability, result_acummulated, logger))
             if status == "ERROR":
-                raise exceptions.error_result_exception(log=logger, value="[RAIN][/run_alg] rain_prediction throwed an error: " + str(result))
+                raise exceptions.error_result_exception(log=logger, value="[RAIN][/run_alg] rain_prediction throwed an error")
             else:
                 #convey to MMT through DSS
                 pool.apply_async(send_mmt, (data, result_probability,"irrigation", "%. Cummulated: " + str(result_acummulated) + " mm"))

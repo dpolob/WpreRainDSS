@@ -1,16 +1,20 @@
 import requests
 import urllib3
+import time
+import datetime
+
 from flask import json
 
-def send_mmt(data, result, observation, message):
-    global logger
+
+def send_mmt(data, result, observation, message, logger):
+
     #convey to MMT through DSS
     urllib3.disable_warnings()  # disable SSL warnings
     data_to_MMT= {
                             "request_id": data['request_id'],
                             "data_type": "number",
                             "data": [{
-                                "timestamp": result['timestamp'],
+                                "timestamp": int(time.mktime(datetime.datetime.now().timetuple())),
                                 "observation": observation,
                                 "units": message,
                                 "result": result
