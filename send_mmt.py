@@ -14,7 +14,7 @@ def send_mmt(data, result, observation, message, logger):
                             "request_id": data['request_id'],
                             "data_type": "number",
                             "data": [{
-                                "timestamp": int(time.mktime(datetime.datetime.now().timetuple())),
+                                "timestamp": 1619441680,
                                 "observation": observation,
                                 "units": message,
                                 "result": result
