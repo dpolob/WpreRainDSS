@@ -17,7 +17,7 @@ def send_mmt(data, result, observation, message, logger):
                                 "timestamp": 1619441680,
                                 "observation": observation,
                                 "units": message,
-                                "result": result
+                                "result": float(result)
                             }]
                         }
     try:
