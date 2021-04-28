@@ -137,7 +137,7 @@ def post_runalg():
             else:
                 #convey to MMT through DSS
                 print(result_probability, "%. Cummulated: " + str(result_acummulated) + " mm")
-                pool.apply_async(send_mmt, (data, result_probability, "Irrigation", "%. Cummulated: " + str(result_acummulated) + " mm"))
+                pool.apply_async(send_mmt, (data, result_probability, "irrigation", "%. Cummulated: " + str(result_acummulated) + " mm"))
                 # Reply to DSS 
                 logger.info("/run_alg {} Reply to DSS. Algorithm started and info sent to MMT".format(request.method))
                 return Response("{\"status\" : \"STARTED\", \"msg\" : {\"OK\" : \"Algorithm started and info sent to MMT\"}}", status=200,    mimetype='application/json')
