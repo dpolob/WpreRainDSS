@@ -18,14 +18,7 @@ def send_mmt(data, result, observation, message, logger):
                                 "observation": observation,
                                 "units": message,
                                 "result": float(result)
-                            },
-                            {
-                                "timestamp": 1619441680,
-                                "observation": observation,
-                                "units": message,
-                                "result": float(result)
-                            }
-                            ]
+                            }]
                         }
     try:
         a = requests.post(url=data['dss_api_endpoint'],
