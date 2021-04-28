@@ -24,7 +24,7 @@ def get_data_url():
         return ("ERROR", "AEMET API is not working")
 
     data_url = json.loads(response_aemet.text)["datos"]
-    #print(data_url)
+    #print(data_url)s
     return("OK", data_url)
 
 def get_data(url):
@@ -45,7 +45,11 @@ def get_data(url):
     #data0 = data['prediccion']['dia'][0]
     prediccion = float(data['prediccion']['dia'][1]['probPrecipitacion'][0]['value'])
     #data2 = data['prediccion']['dia'][2]
-    acummulated = sum([float(x["value"]) for x in data['prediccion']['dia'][1]['precipitacion']])
+    try:
+        acummulated = sum([float(x["value"]) for x in data['prediccion']['dia'][1]['precipitacion']])
+    except:
+        acummulated = 0.0
+
    
     return ("OK", prediccion, acummulated)
 
