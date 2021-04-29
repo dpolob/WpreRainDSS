@@ -1,0 +1,9 @@
+version: '3'
+services:
+  wpreraindss:
+    container_name: wpreraindss
+    build:
+      dockerfile: dockerfile
+      context: .
+    ports:
+      - '5011:5100'
