@@ -136,7 +136,7 @@ def post_runalg():
                 raise exceptions.error_result_exception(log=logger, value="[RAIN][/run_alg] rain_prediction throwed an error")
             else:
                 #convey to MMT through DSS
-                pool.apply_async(send_mmt, (data, result_probability, "irrigation", "%. Cummulated: " + str(result_acummulated) + " mm", logger))
+                pool.apply_async(send_mmt, (data, result_probability, "rainfall", "%. Cummulated: " + str(result_acummulated) + " mm", logger))
                 # Reply to DSS 
                 logger.info("/run_alg {} Reply to DSS. Algorithm started and info sent to MMT".format(request.method))
                 return Response("{\"status\" : \"STARTED\", \"msg\" : {\"OK\" : \"Algorithm started and info sent to MMT\"}}", status=200,    mimetype='application/json')
